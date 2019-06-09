@@ -1,2 +1,2 @@
 # devops-test-vagrant
-![Alt text](images/presentation.png? "Architecture")
+![Alt text](images/Architecture.jpg? "Architecture")
