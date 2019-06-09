@@ -1,0 +1,37 @@
+node ('swarm-node') {
+    stage('Checkout')
+    
+    {
+        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], 
+    userRemoteConfigs: [[url: 'https://github.com/ashishkamat2791/devops-test.git']]])
+    }
+    stage ('build') {
+        sh """
+         npm install
+         npm build
+        """
+    }
+    stage ('test') {
+        sh """
+          npm test
+        """
+    }
+    stage ('build-and-push') {
+        sh """
+           docker build -t nodeapp:${env.BUILD_ID}
+           docker tag node-app:${env.BUILD_ID} localhost:5000/ashishk/nodeapp:${env.BUILD_ID}
+           docker push 192.168.56.11:5000/ashishk/nodeapp:${env.BUILD_ID}
+        """
+    }
+   stage ('deploy-to-prod')
+   {
+        timeout(time: 5, unit: 'MINUTES') {
+        input 'Should I Deploy?'
+        sh """
+        docker-compose pull --parallel 
+        docker-compose up --force-recreate 192.168.56.11:5000/ashishk/nodeapp:${env.BUILD_ID}
+        """
+        
+}
+   }
+}
