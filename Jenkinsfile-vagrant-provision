@@ -1,0 +1,25 @@
+node {
+    stage ('checkout-code') {
+        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [],
+        submoduleCfg: [], 
+        userRemoteConfigs: [[url: 'https://github.com/ashishkamat2791/devops-test-vagrant.git']]])
+    }
+    
+    stage ('provision the infra') {
+        sh """
+        cd vagrant-code 
+         echo "get to know about existing infra"
+        vagrant status
+        echo "cleanup infra (not recommended in production)"
+        vagrant destroy --force
+       
+        echo "Apply infrastructure changes"
+        vagrant up
+        """
+    }
+   
+    stage ("Call deploy-job") {
+        build 'BuildIt-Demo-Vagrant'
+    }
+    
+}
